@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <LoRa.h>
 #include <SPI.h>
+#include "header.h"
 #include "wireless.h"
 #include "protocol.h"
 
@@ -9,7 +10,8 @@
 #define rst 14
 #define dio0 2
 
-static uint8_t voting = 0;
+extern voting_status voting;
+
 void setup() {
 
   // Set serial communication and communication with LoRa transceiver
@@ -28,7 +30,7 @@ void setup() {
 
 void loop() {
   
-  uint8_t msg[3] = {0xFF, 0xFF, 0xFF};
+  uint8_t* msg = createMessage(255,255,250);
   sendMessage(msg, 3);
   delay(500);
 }

@@ -4,6 +4,15 @@
 // destination + msg
 // checking
 
+uint8_t* createMessage(uint8_t address, uint8_t msg, uint8_t check_sum){
+    uint8_t *ptr;
+    ptr = (uint8_t *)calloc(3, sizeof(uint8_t));
+    ptr[0] = address;
+    ptr[1] = msg;
+    ptr[2] = check_sum;
+
+    return ptr;
+}
 uint8_t* receiveMessage(){
     int packetSize = LoRa.parsePacket();
     

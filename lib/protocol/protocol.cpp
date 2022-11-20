@@ -19,6 +19,8 @@ uint8_t get_msb(uint8_t figure){
 }
 
 Protocol :: Protocol(uint8_t own_add){
+    ack_start_fill = 0;
+    ack_vote_fill = 0;
     own_address = own_add;
     address = 0;
     msg_type = 0;
@@ -42,28 +44,53 @@ void Protocol :: data_validate(){
 }
 
 void Protocol :: msg_execution(){
-    switch(msg_type){
-        case voting_open:
-            void voting_open_func();
-            break;
-            
-        case ack_voting_open:
-            void ack_voting_open_func();
-            break;
+    
+    if(voting == voting_is_close && msg_type == voting_open){
+        voting_open_func();
+    }
+    else if(msg_type == ack_voting_open){
+        ack_voting_open_func();
+    }
+    else if(voting == voting_is_open){
+        switch(msg_type){    
+            case vote_send:
+                void vote_send_func();
+                break;
 
-        case vote_send:
-            void vote_send_func();
-            break;
+            case ack_vote_send:
+                void ack_vote_send_func();
+                break;
 
-        case ack_vote_send:
-            void ack_vote_send_func();
-            break;
-
-        case vote_end:
-            void vote_end_func();
-            break;
-
+            case vote_end:
+                void vote_end_func();
+                break;
         default:
             break;
+        }
     }
+}
+uint8_t check_sum_func(uint8_t val1, uint8_t val2){
+    // tbd
+    return 255;
+}
+void Protocol :: voting_open_func(){
+    voting = voting_is_open; // switch on voting mode
+
+    uint8_t response_msg = (ack_voting_open << 4);
+    uint8_t new_check_sum = check_sum_func(own_address, response_msg); // tbd
+    uint8_t* response = createMessage(own_address, response_msg, new_check_sum);
+    sendMessage(response, 3);
+}
+
+void Protocol :: ack_voting_open_func(){
+    if(address > 0 && address <= number_of_devices){
+        ack_start[address] = address;
+    }
+}
+uint8_t Protocol :: check_fill(uint8_t* arr,uint8_t number_of_elements){
+    uint8_t num;
+    for(int n = 0; n < number_of_devices; n++){
+        if(!arr[n]) num++;
+    }
+    return num;
 }
