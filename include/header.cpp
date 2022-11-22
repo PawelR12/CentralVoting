@@ -10,4 +10,4 @@ for(int n = 1; n<= number_of_devices, n++){
 }
 
 *ack_start = (uint8_t*)calloc(number_of_devices, siezof(uint8_t));
-*ack_vote= (uint8_t*)calloc(number_of_devices, siezof(uint8_t));
+*voting_results= (uint8_t*)calloc(number_of_devices, siezof(uint8_t));

@@ -8,6 +8,7 @@ typedef enum msg_destination{
     vote_end,
 }  msg_destination;
 
+
 uint8_t get_lsb(uint8_t figure){
     figure = figure & 0x0F;
     return figure;
@@ -86,6 +87,29 @@ void Protocol :: ack_voting_open_func(){
     if(address > 0 && address <= number_of_devices){
         ack_start[address] = address;
     }
+}
+
+void Protocol :: vote_send_func(vote_possibilites last_vote){
+    // add this vote to list of votes
+    if(address > 0 && address <= number_of_devices){
+        voting_results[address] = last_vote;
+    }
+    // send ack msg
+    uint8_t voting_msg = (ack_vote_send << 4);
+    uint8_t new_check_sum = check_sum_func(address, voting_msg);
+    uint8_t* ack_your_vote = createMessage(address, voting_msg , new_check_sum);
+    sendMessage(ack_your_vote, 3);
+}
+
+void ack_vote_send_func(){
+    // if(address > 0 && address <= number_of_devices){
+    //     voting_results[address] = address;
+    // }
+    // tbd
+}
+
+void vote_end_func(){
+    voting = voting_is_close;
 }
 uint8_t Protocol :: check_fill(uint8_t* arr,uint8_t number_of_elements){
     uint8_t num;

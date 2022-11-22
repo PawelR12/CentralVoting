@@ -9,7 +9,7 @@
 #define ss 5
 #define rst 14
 #define dio0 2
-
+#define ACTIVATE_BUTTON 2
 extern voting_status voting;
 
 void setup() {
