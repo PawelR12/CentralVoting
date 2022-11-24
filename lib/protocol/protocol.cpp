@@ -1,5 +1,6 @@
 #include "protocol.h"
 
+
 typedef enum msg_destination{
     voting_open,
     ack_voting_open,
@@ -27,8 +28,27 @@ Protocol :: Protocol(uint8_t own_add){
     msg_type = 0;
     msg = 0;
     check_sum = 0;
+
+    voting = voting_is_close;
+    number_of_devices = 10;
+
+    device_array = (uint8_t*)calloc(number_of_devices, sizeof(uint8_t));
+
+    for(int n = 1; n<= number_of_devices; n++){
+    device_array[n-1] = n;
+    }
+
+    ack_start = (uint8_t*)calloc(number_of_devices, sizeof(uint8_t));
+    voting_results= (uint8_t*)calloc(number_of_devices, sizeof(uint8_t));
+
 }
 
+void Protocol :: voting_receive(){
+
+    uint8_t* data = receiveMessage();
+    data_validate(data);
+
+}
 void Protocol :: divide_message(uint8_t* data){
     address = data[0];
     msg_type = get_msb(data[1]);
@@ -36,12 +56,23 @@ void Protocol :: divide_message(uint8_t* data){
     check_sum = data[2]; 
 }
 
-void Protocol :: data_validate(){
-    uint8_t validate = 1;
+void Protocol :: data_validate(uint8_t* data){
+    uint8_t validate = true;
     // tbd
+    if(data[0] != 0 || data[0] != own_address){
+        validate = false;
+    }
     // if address is correct
+    uint8_t cs = check_sum_func(data[0],data[1]);
+    if(cs != data[2]){
+        validate = false;
+    }
     // if check sum is correct
-    if(validate)    msg_execution();
+        
+    if(validate){
+         divide_message(data);
+         msg_execution();
+    }
 }
 
 void Protocol :: msg_execution(){
@@ -70,10 +101,32 @@ void Protocol :: msg_execution(){
         }
     }
 }
-uint8_t check_sum_func(uint8_t val1, uint8_t val2){
-    // tbd
-    return 255;
+uint8_t Protocol :: check_sum_func(uint8_t val1, uint8_t val2){
+    int16_t sum;
+    int8_t ans;
+    sum = (uint16_t)val1 + (uint16_t)val2;
+    if(sum % 2)     sum++;
+    ans = (uint8_t)(sum/2);
+    return ans;
 }
+
+uint8_t Protocol :: get_address(){
+    return address;
+}
+
+uint8_t Protocol :: get_msg_type()
+{
+    return msg_type;
+}
+
+uint8_t Protocol :: get_msg(){
+    return msg;
+}
+
+uint8_t Protocol :: get_check_sum(){
+    return check_sum;
+}
+
 void Protocol :: voting_open_func(){
     voting = voting_is_open; // switch on voting mode
 
@@ -101,20 +154,32 @@ void Protocol :: vote_send_func(vote_possibilites last_vote){
     sendMessage(ack_your_vote, 3);
 }
 
-void ack_vote_send_func(){
+void Protocol :: ack_vote_send_func(){
     // if(address > 0 && address <= number_of_devices){
     //     voting_results[address] = address;
     // }
     // tbd
 }
 
-void vote_end_func(){
+void Protocol :: vote_end_func(){
     voting = voting_is_close;
+    
 }
+
 uint8_t Protocol :: check_fill(uint8_t* arr,uint8_t number_of_elements){
     uint8_t num;
     for(int n = 0; n < number_of_devices; n++){
         if(!arr[n]) num++;
     }
     return num;
+}
+
+void Protocol :: send_voting_open(uint8_t destination_address){
+    
+    uint8_t msg = voting_open << 4;
+    uint8_t check_sum = check_sum_func(destination_address, msg);
+    
+    uint8_t *ptr = createMessage(destination_address, msg, check_sum);
+    sendMessage(ptr, 3);
+
 }

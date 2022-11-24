@@ -1,6 +1,8 @@
 #include "header.h"
 
 
+voting_status voting = voting_is_close;
+uint8_t number_of_devices = 10;
 if (number_of_devices > 63)     number_of_devices = 63;
 
 device_array = (uint8_t*)calloc(number_of_devices, siezof(uint8_t));

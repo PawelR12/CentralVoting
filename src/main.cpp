@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <LoRa.h>
 #include <SPI.h>
-#include "header.h"
-#include "wireless.h"
+// #include "header.h"
+// #include "wireless.h"
 #include "protocol.h"
 
 // Definition for RFM95W 
@@ -10,8 +10,8 @@
 #define rst 14
 #define dio0 2
 #define ACTIVATE_BUTTON 2
-extern voting_status voting;
-
+// extern voting_status voting;
+Protocol protocol(0x00);
 void setup() {
 
   // Set serial communication and communication with LoRa transceiver
@@ -21,16 +21,19 @@ void setup() {
     Serial.println("Lora Communication Fail");
     delay(300);
   }
+  LoRa.setSyncWord(0xA7);
   Serial.println("Success communication with LoRa");
-
-  LoRa.setSyncWord(0xA7); // We can only receive and send messages to the devices
+  
+   // We can only receive and send messages to the devices
   // with the same SyncWord number
-
+  pinMode(ACTIVATE_BUTTON, INPUT);
 }
 
 void loop() {
-  
-  uint8_t* msg = createMessage(255,255,250);
-  sendMessage(msg, 3);
-  delay(500);
+
+  if(digitalRead(ACTIVATE_BUTTON && protocol.voting == voting_is_close)){
+    protocol.send_voting_open(0);
+    protocol.voting = voting_is_open;
+  }
+
 }
