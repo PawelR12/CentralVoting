@@ -13,23 +13,27 @@ uint8_t* createMessage(uint8_t address, uint8_t msg, uint8_t check_sum){
 
     return ptr;
 }
-uint8_t* receiveMessage(){
+uint32_t receiveMessage(){
     int packetSize = LoRa.parsePacket();
-    
-    if (packetSize){
-        static uint8_t *ptr;
-        uint8_t n = 0;
+    uint32_t msg = 0;
 
-        ptr = (uint8_t *)calloc(packetSize,sizeof(uint8_t));
+    if (packetSize){
+        uint8_t n = 0;
       
         if (packetSize){
             while(LoRa.available()){
-                ptr[n] = LoRa.read();
+    
+                msg |= uint32_t((uint32_t(LoRa.read()) << (8*n)));
                 n++;
             }
         }
-
-        return ptr;
+        uint32_t tmp1, tmp2, tmp3;
+        tmp1 = (msg & 0x0000FF) << 16;
+        tmp3 = (msg & 0x00FF00);
+        tmp2 = (msg & 0xFF0000) >> 16;
+        msg = tmp1 | tmp2 | tmp3;
+       
+        return msg;
     }
     else{
         return 0;

@@ -7,6 +7,6 @@
 
 uint8_t* createMessage(uint8_t address, uint8_t msg, uint8_t check_sum);
 void sendMessage(uint8_t* msg, uint8_t msgSize);
-uint8_t* receiveMessage();
+uint32_t receiveMessage();
 
 #endif
