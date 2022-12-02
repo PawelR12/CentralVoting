@@ -8,6 +8,7 @@ typedef enum{
   voting_is_open,
   voting_is_close,
   during_voting,
+  after_voting,
 } voting_status;
 
 uint8_t get_lsb(uint8_t);
@@ -20,9 +21,9 @@ uint8_t get_msb(uint8_t);
 // extern uint8_t number_of_devices;
 
 typedef enum vote_possibilites{
-    vote_yes = 1,
-    vote_no = 2,
-    vote_no_decision = 3,
+    vote_yes = 0b1111,
+    vote_no = 0b0000,
+    vote_no_decision = 0b1010,
 } vote_possibilites;
 
 class Protocol{
@@ -62,15 +63,14 @@ class Protocol{
         uint8_t msg;
         uint8_t check_sum;
         uint8_t validate;
+        uint8_t my_last_vote;
         void voting_open_func();
         void ack_voting_open_func();
         void can_send_voices_func();
-        void vote_send_func(vote_possibilites own_vote);
+        void vote_send_func(uint8_t own_vote);
         void ack_vote_send_func(); // tbd
         void vote_end_func();
-        
-
-        
+      
 };
 
 

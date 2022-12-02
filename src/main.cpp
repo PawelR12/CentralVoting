@@ -11,9 +11,7 @@
 #define dio0 2
 #define ACTIVATE_BUTTON 4
 #define ACTION_BUTTON 15
-#define YES_BUTTON 4
-#define NO_BUTTON 5
-#define NO_DECSION_BUTTON 6
+
 // extern voting_status voting;
 Protocol protocol(0x00);
 
@@ -67,7 +65,7 @@ void loop() {
       if(digitalRead(ACTION_BUTTON) && protocol.voting == voting_is_open){
         //protocol.voting == during_voting;
         protocol.send_can_vote(0);
-
+        
         Serial.println("You can send the voices");
       }
     }

@@ -30,6 +30,7 @@ Protocol :: Protocol(uint8_t own_add){
     msg = 0;
     check_sum = 0;
     validate = false;
+    my_last_vote = NULL;
 
     voting = voting_is_close;
     number_of_devices = 10;
@@ -124,6 +125,8 @@ void Protocol :: msg_execution(){
     Serial.println(voting);
     Serial.print("Msg type: ");
     Serial.println(msg_type);
+    Serial.print("Votinng: ");
+    Serial.println(voting);
     if(voting == voting_is_close && msg_type == voting_open){
         voting_open_func();
         Serial.println("I was there...");
@@ -131,22 +134,24 @@ void Protocol :: msg_execution(){
     else if(msg_type == ack_voting_open){
         ack_voting_open_func();
     }
-    else if(voting == during_voting){
+    else if(voting == voting_is_open){
+        Serial.print("Msg type: "); Serial.println(msg_type);
+        
         switch(msg_type){    
             case can_send_voices:
-                void can_send_voices_func();
+                Serial.println("wut");
+                can_send_voices_func();
                 break;
             case vote_send:
-                void vote_send_func();
+                vote_send_func(msg);
                 break;
+            // case ack_vote_send:
+            //     ack_vote_send_func();
+            //     break;
 
-            case ack_vote_send:
-                void ack_vote_send_func();
-                break;
-
-            case vote_end:
-                void vote_end_func();
-                break;
+            // case vote_end:
+            //     vote_end_func();
+            //     break;
         default:
             break;
         }
@@ -204,27 +209,33 @@ void Protocol :: ack_voting_open_func(){
     
 }
 
-void Protocol :: vote_send_func(vote_possibilites last_vote){
+void Protocol :: vote_send_func(uint8_t last_vote){
     // add this vote to list of votes
-    if(address > 0 && address <= number_of_devices){
-        voting_results[address] = last_vote;
+    if(msg == vote_yes || msg == vote_no || msg = vote_no_decision){
+        if(address > 0 && address <= number_of_devices){
+            voting_results[address] = last_vote;
+        }
+        Serial.print("Last vote: ");
+        Serial.println(last_vote);
+        // send ack msg
+        uint8_t voting_msg = (ack_vote_send << 4);
+        uint8_t new_check_sum = check_sum_func(address, voting_msg);
+        uint8_t* ack_your_vote = createMessage(address, voting_msg , new_check_sum);
+        sendMessage(ack_your_vote, 3);
     }
-    // send ack msg
-    uint8_t voting_msg = (ack_vote_send << 4);
-    uint8_t new_check_sum = check_sum_func(address, voting_msg);
-    uint8_t* ack_your_vote = createMessage(address, voting_msg , new_check_sum);
-    sendMessage(ack_your_vote, 3);
 }
 
 void Protocol :: can_send_voices_func(){
     // sth lights
     voting = during_voting;
+    Serial.println("During voting");
 }
 void Protocol :: ack_vote_send_func(){
-    // if(address > 0 && address <= number_of_devices){
-    //     voting_results[address] = address;
-    // }
-    // tbd
+    Serial.println("Proper message received")
+    if(msg != my_last_vote){
+        Serial.print("Wrong message received");
+        send_voice(my_last_vote);
+    }
 }
 
 void Protocol :: vote_end_func(){
@@ -267,13 +278,14 @@ void Protocol :: send_can_vote(uint8_t destination_address){
 }
 
 void Protocol :: send_voice(vote_possibilites vote){
-    uint8_t msg = (vote_send << 4) | vote_yes;
+    uint8_t msg = (vote_send << 4) | vote;
     uint8_t check_sum = check_sum_func(0, msg);
 
     uint8_t *ptr = createMessage(0, msg, check_sum);
     sendMessage(ptr,3);
     uint32_t x = (uint32_t)msg << 16 | (uint32_t)check_sum << 8;
-
+    voting = after_voting;
+    my_last_vote = vote;
 
 }
 
