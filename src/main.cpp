@@ -56,11 +56,11 @@ void setup() {
   Serial.begin(115200);
   LoRa.setPins(ss, rst, dio0);
   while (!LoRa.begin(866E6)){
-    Serial.println("Lora Communication Fail");
+    Serial.println("Communication Fail");
     delay(300);
   }
   LoRa.setSyncWord(0xA7);
-  Serial.println("Success communication with LoRa");
+  Serial.println("Success RFM95W communication");
   
    // We can only receive and send messages to the devices
   // with the same SyncWord number
@@ -95,12 +95,15 @@ void setup() {
 
 
       Serial.println("--->Clearing basic values");
-      tmp =  "conncected_devices=0";
+      tmp =  "connected_devices=0";
       //tmp = data_to_send + String(protocol.voting);
-      Serial.print("--->  ..conncected devices");
+      Serial.print("--->  ..connected_devices");
       http.POST(tmp);
       // http.end();
 
+      Serial.println("  ..casted_votes");
+      http.POST("casted_votes=0");
+      
       tmp =  "yes_votes=0";
       //tmp = data_to_send + String(protocol.voting);
       Serial.print("  .. yes_votes");
@@ -175,8 +178,8 @@ void loop() {
         }
     }
     if(digitalRead(ACTION_BUTTON) && stage == 1){
-          digitalWrite(GREEN_LED, HIGH);
-          digitalWrite(YELLOW_LED, LOW);
+          digitalWrite(GREEN_LED, LOW);
+          digitalWrite(YELLOW_LED, HIGH);
           protocol.send_close_voting();
           Serial.println("--- VOTING IS CLOSE");    
           Serial.println("--->Server communication");
